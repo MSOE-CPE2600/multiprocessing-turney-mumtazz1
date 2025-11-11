@@ -1,3 +1,15 @@
+/***********************************************************************
+ * @file mandel.c
+ * @brief Source file which implements image creation
+ * Course: CPE2600
+ * Assignment: Lab 11 - Multiprocessing
+ * Author: Zoya Mumtaz
+ * Date: 11/11/2025
+ * Note: compile with
+ *     $ make
+ *     run with
+ *     $ ./mandel
+ */
 /// 
 //  mandel.c
 //  Based on example code found here:

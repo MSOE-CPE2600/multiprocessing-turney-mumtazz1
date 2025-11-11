@@ -3,7 +3,7 @@ CFLAGS=-c -Wall -g
 LDFLAGS=-ljpeg
 SOURCES= mandel.c jpegrw.c 
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=mandel
+EXECUTABLE= mandel
 
 all: $(SOURCES) $(EXECUTABLE) 
 

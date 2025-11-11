@@ -1,3 +1,16 @@
+/***********************************************************************
+ * @file jpegrw.h
+ * @brief Header file which declares functions for jpegrw.c
+ * Course: CPE2600
+ * Assignment: Lab 11 - Multiprocessing
+ * Author: Zoya Mumtaz
+ * Date: 11/11/2025
+ * Note: compile with
+ *     $ make
+ *     run with
+ *     $ ./mandel
+ */
+
 #ifndef JPEGRW_H
 #define JPEGRW_H
 
