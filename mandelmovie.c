@@ -6,9 +6,9 @@
  * Author: Zoya Mumtaz
  * Date: 11/11/2025
  * Note: compile with
- *     $ make
+ *     $ gcc -o movie jpegrw.c mandelmovie.c -lm -ljpeg
  *     run with
- *     $ ./mandel
+ *     $ ./movie
  */
 /// 
 //  mandel.c
@@ -22,7 +22,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <math.h>
 #include "jpegrw.h"
+
+#define NUM_IMAGES 50 //number of image needed, 50 iterations to be done
 
 // local routines
 static int iteration_to_color( int i, int max );
@@ -35,72 +39,92 @@ static void show_help();
 int main( int argc, char *argv[] )
 {
 	char c;
+    int num_child = 1; //default 1 child
 
 	// These are the default configuration values used
 	// if no command line arguments are given.
-	const char *outfile = "mandel.jpg";
+	//char *outfile = "mandel.jpg";
 	double xcenter = 0;
 	double ycenter = 0;
 	double xscale = 4;
-	double yscale = 0; // calc later
+	double yscale = 4;
 	int    image_width = 1000;
 	int    image_height = 1000;
 	int    max = 1000;
 
+    double initial_scale = 4.0;
+    double end_scale = 0.5; //last image zoom
+    double total_scale = initial_scale - end_scale;
+
+    double scale_size = total_scale / (NUM_IMAGES - 1);
+
 	// For each command line argument given,
 	// override the appropriate configuration value.
 
-	while((c = getopt(argc,argv,"x:y:s:W:H:m:o:h"))!=-1) {
+	while((c = getopt(argc,argv,"n:"))!=-1) {
 		switch(c) 
 		{
-			case 'x':
-				xcenter = atof(optarg);
-				break;
-			case 'y':
-				ycenter = atof(optarg);
-				break;
-			case 's':
-				xscale = atof(optarg);
-				break;
-			case 'W':
-				image_width = atoi(optarg);
-				break;
-			case 'H':
-				image_height = atoi(optarg);
-				break;
-			case 'm':
-				max = atoi(optarg);
-				break;
-			case 'o':
-				outfile = optarg;
-				break;
-			case 'h':
-				show_help();
-				exit(1);
-				break;
+            case 'n':
+                num_child = atoi(optarg);
+                break;      
 		}
 	}
 
-	// Calculate y scale based on x scale (settable) and image sizes in X and Y (settable)
-	yscale = xscale / image_width * image_height;
+    if (num_child < 1 || num_child > NUM_IMAGES){
+        printf("Error: Number of children must be between 1 and 50.\n");
+        return 1;
+    }
 
-	// Display the configuration of the image.
-	printf("mandel: x=%lf y=%lf xscale=%lf yscale=%1f max=%d outfile=%s\n",xcenter,ycenter,xscale,yscale,max,outfile);
+    int batch = NUM_IMAGES / num_child;
+    for (int i = 0; i < num_child; i++){
+        int start = i * batch;
+        int end = start + batch;
 
-	// Create a raw image of the appropriate size.
-	imgRawImage* img = initRawImage(image_width,image_height);
+        if (i == num_child - 1){
+            end = NUM_IMAGES;
+        }
 
-	// Fill it with a black
-	setImageCOLOR(img,0);
+        pid_t pid = fork();
+        if (pid == 0){
+            for(int v = start; v < end; v++){
+                // Calculate y scale based on x scale (settable) and image sizes in X and Y (settable)
+                // yscale = xscale / image_width * image_height;
 
-	// Compute the Mandelbrot image
-	compute_image(img,xcenter-xscale/2,xcenter+xscale/2,ycenter-yscale/2,ycenter+yscale/2,max);
+                double current_scale = initial_scale - (v * scale_size);
+                xscale = current_scale;
+                yscale = current_scale;
 
-	// Save the image in the stated file.
-	storeJpegImageFile(img,outfile);
+                char curr_filename[64];
+                sprintf(curr_filename, "mandel%03d.jpg", v);
 
-	// free the mallocs
-	freeRawImage(img);
+                // Display the configuration of the image.
+                printf("mandel: x=%lf y=%lf xscale=%lf yscale=%1f max=%d outfile=%s PID=%d\n",xcenter,ycenter,xscale,yscale,max,curr_filename, getpid());
+
+                // Create a raw image of the appropriate size.
+                imgRawImage* img = initRawImage(image_width,image_height);
+
+                // Fill it with a black
+                setImageCOLOR(img,0);
+
+                // Compute the Mandelbrot image
+                compute_image(img,xcenter-xscale/2,xcenter+xscale/2,ycenter-yscale/2,ycenter+yscale/2,max);
+
+                // Save the image in the stated file.
+                storeJpegImageFile(img,curr_filename);
+
+                // free the mallocs
+                freeRawImage(img);
+            }
+
+            exit(0);
+        }
+    }
+
+    for (int i = 0; i < num_child; i++){
+        wait(NULL);
+    }
+
+	
 
 	return 0;
 }

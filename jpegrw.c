@@ -18,6 +18,7 @@
 //  Minor changes made to some types.
 //  Compile with -ljpeg
 ///
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <jpeglib.h>    
