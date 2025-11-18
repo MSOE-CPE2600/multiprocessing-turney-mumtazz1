@@ -52,19 +52,19 @@ int main( int argc, char *argv[] )
 	int    image_height = 1000;
 	int    max = 1000;
 
-    double initial_scale = 2.5;
-    double end_scale = 0.07; //last image zoom
-    double total_scale = initial_scale - end_scale;
+    double initial_scale = 2.5; //initial scale zoom
+    double end_scale = 0.07; //final image scale
+    double total_scale = initial_scale - end_scale; //total scale to be done
 
-    double scale_size = total_scale / (NUM_IMAGES - 1);
+    double scale_size = total_scale / (NUM_IMAGES - 1); //scale step for each image
 
-    double x_start = -0.6;
-    double x_end = -1.75;
-    double x_shift = (x_end - x_start)/(NUM_IMAGES - 1);
+    double x_start = -0.6; //starting x position
+    double x_end = -1.77; //ending x position
+    double x_shift = (x_end - x_start)/(NUM_IMAGES - 1); //x shift step for each image
 
-    double y_start = 0.0;
-    double y_end = 0.0;
-    double y_shift = (y_end - y_start)/(NUM_IMAGES - 1);
+    double y_start = 0.0; //starting y position
+    double y_end = 0.0; //ending x position
+    double y_shift = (y_end - y_start)/(NUM_IMAGES - 1); //y shift step for each image
 
 	// For each command line argument given,
 	// override the appropriate configuration value.
@@ -83,28 +83,28 @@ int main( int argc, char *argv[] )
         return 1;
     }
 
-    int batch = NUM_IMAGES / num_child;
-    for (int i = 0; i < num_child; i++){
-        int start = i * batch;
-        int end = start + batch;
+    int batch = NUM_IMAGES / num_child; //divide processes with num of children
+    for (int i = 0; i < num_child; i++){ //each child iterates
+        int start = i * batch; //the child's starting image
+        int end = start + batch; //the child's ending image
 
         if (i == num_child - 1){
-            end = NUM_IMAGES;
+            end = NUM_IMAGES; //handle the last 50th image
         }
 
         pid_t pid = fork();
         if (pid == 0){
             for(int v = start; v < end; v++){
-                // Calculate y scale based on x scale (settable) and image sizes in X and Y (settable)
-                // yscale = xscale / image_width * image_height;
-
+                // Calculate y and x scale and the center x and y positions
                 double current_scale = initial_scale - (v * scale_size);
                 xscale = current_scale;
                 yscale = current_scale;
                 xcenter = x_start + (v * x_shift);
                 ycenter = y_start + (v * y_shift);
 
+                //create filename
                 char curr_filename[64];
+                //using sprintf to print to buffer
                 sprintf(curr_filename, "mandel%d.jpg", v);
 
                 // Display the configuration of the image.
@@ -133,8 +133,6 @@ int main( int argc, char *argv[] )
     for (int i = 0; i < num_child; i++){
         wait(NULL);
     }
-
-	
 
 	return 0;
 }
