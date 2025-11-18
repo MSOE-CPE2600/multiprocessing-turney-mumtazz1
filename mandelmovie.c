@@ -44,7 +44,7 @@ int main( int argc, char *argv[] )
 	// These are the default configuration values used
 	// if no command line arguments are given.
 	//char *outfile = "mandel.jpg";
-	double xcenter = 0;
+	double xcenter = 0.0;
 	double ycenter = 0;
 	double xscale = 4;
 	double yscale = 4;
@@ -52,11 +52,19 @@ int main( int argc, char *argv[] )
 	int    image_height = 1000;
 	int    max = 1000;
 
-    double initial_scale = 4.0;
-    double end_scale = 0.5; //last image zoom
+    double initial_scale = 2.5;
+    double end_scale = 0.07; //last image zoom
     double total_scale = initial_scale - end_scale;
 
     double scale_size = total_scale / (NUM_IMAGES - 1);
+
+    double x_start = -0.6;
+    double x_end = -1.75;
+    double x_shift = (x_end - x_start)/(NUM_IMAGES - 1);
+
+    double y_start = 0.0;
+    double y_end = 0.0;
+    double y_shift = (y_end - y_start)/(NUM_IMAGES - 1);
 
 	// For each command line argument given,
 	// override the appropriate configuration value.
@@ -93,9 +101,11 @@ int main( int argc, char *argv[] )
                 double current_scale = initial_scale - (v * scale_size);
                 xscale = current_scale;
                 yscale = current_scale;
+                xcenter = x_start + (v * x_shift);
+                ycenter = y_start + (v * y_shift);
 
                 char curr_filename[64];
-                sprintf(curr_filename, "mandel%03d.jpg", v);
+                sprintf(curr_filename, "mandel%d.jpg", v);
 
                 // Display the configuration of the image.
                 printf("mandel: x=%lf y=%lf xscale=%lf yscale=%1f max=%d outfile=%s PID=%d\n",xcenter,ycenter,xscale,yscale,max,curr_filename, getpid());
