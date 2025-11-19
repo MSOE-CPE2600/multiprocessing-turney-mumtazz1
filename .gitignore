@@ -2,5 +2,6 @@
 *.o
 mandel
 *.jpg
+!lab11graph.jpg
 *.mpg
 movie
