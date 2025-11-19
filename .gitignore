@@ -4,4 +4,5 @@ mandel
 *.jpg
 !lab11graph.jpg
 *.mpg
+!mandel.mpg
 movie
