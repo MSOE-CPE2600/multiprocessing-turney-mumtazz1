@@ -1,12 +1,12 @@
 /***********************************************************************
  * @file mandel.c
- * @brief Source file which implements image creation
+ * @brief Source file which implements image creation for movie
  * Course: CPE2600
  * Assignment: Lab 11 - Multiprocessing
  * Author: Zoya Mumtaz
  * Date: 11/11/2025
  * Note: compile with
- *     $ gcc -o movie jpegrw.c mandelmovie.c -lm -ljpeg
+ *     $ make
  *     run with
  *     $ ./movie
  */
@@ -62,6 +62,7 @@ int main( int argc, char *argv[] )
     double x_end = -1.77; //ending x position
     double x_shift = (x_end - x_start)/(NUM_IMAGES - 1); //x shift step for each image
 
+	//the y shift was not needed for this program
     double y_start = 0.0; //starting y position
     double y_end = 0.0; //ending x position
     double y_shift = (y_end - y_start)/(NUM_IMAGES - 1); //y shift step for each image
@@ -69,12 +70,18 @@ int main( int argc, char *argv[] )
 	// For each command line argument given,
 	// override the appropriate configuration value.
 
-	while((c = getopt(argc,argv,"n:"))!=-1) {
+	while((c = getopt(argc,argv,"n:h"))!=-1) {
 		switch(c) 
 		{
             case 'n':
                 num_child = atoi(optarg);
-                break;      
+                break;    
+			case 'h':
+			    show_help();
+				return 0;
+				break;
+			default:
+			    return 0;		  
 		}
 	}
 
@@ -213,18 +220,9 @@ int iteration_to_color( int iters, int max )
 // Show help message
 void show_help()
 {
-	printf("Use: mandel [options]\n");
-	printf("Where options are:\n");
-	printf("-m <max>    The maximum number of iterations per point. (default=1000)\n");
-	printf("-x <coord>  X coordinate of image center point. (default=0)\n");
-	printf("-y <coord>  Y coordinate of image center point. (default=0)\n");
-	printf("-s <scale>  Scale of the image in Mandlebrot coordinates (X-axis). (default=4)\n");
-	printf("-W <pixels> Width of the image in pixels. (default=1000)\n");
-	printf("-H <pixels> Height of the image in pixels. (default=1000)\n");
-	printf("-o <file>   Set output file. (default=mandel.bmp)\n");
-	printf("-h          Show this help text.\n");
-	printf("\nSome examples are:\n");
-	printf("mandel -x -0.5 -y -0.5 -s 0.2\n");
-	printf("mandel -x -.38 -y -.665 -s .05 -m 100\n");
-	printf("mandel -x 0.286932 -y 0.014287 -s .0005 -m 1000\n\n");
+	printf("Use: ./movie [option]\n");
+	printf("-n <number of child processes>\n");
+	printf("Example: ./movie -n 15\n");
+	printf("-h: this help message.\n");
+
 }
