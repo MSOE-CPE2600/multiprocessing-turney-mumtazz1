@@ -4,7 +4,7 @@
  * Course: CPE2600
  * Assignment: Lab 12 - Multithreading
  * Author: Zoya Mumtaz
- * Date: 11/11/2025
+ * Date: 11/20/2025
  * Note: compile with
  *     $ make
  *     run with
@@ -30,7 +30,7 @@
 
 #define NUM_IMAGES 50 //number of image needed, 50 iterations to be done
 
-//creating a struct to hold variables for the thread
+//declare struct to hold image coordinate variables for the thread
 struct thread_data {
 	struct bitmap *bm;
 	double xmin;

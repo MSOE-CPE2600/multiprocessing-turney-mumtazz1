@@ -1,10 +1,11 @@
 /***********************************************************************
  * @file bitmap.c
  * @brief implements the functions of the bitmap structure
+ * allocating struct here to avoid global variable
  * Course: CPE2600
  * Assignment: Lab 12 - Multithreading
  * Author: Zoya Mumtaz
- * Date: 11/11/2025
+ * Date: 11/20/2025
  * Note: compile with
  *     $ make
  *     run with
@@ -18,11 +19,6 @@
 struct bitmap {
     int width;
     int height;
-    
-    double xmin;
-    double ymin;
-    double xmax;
-    double ymax;
     
     int max;
     
@@ -54,12 +50,6 @@ struct bitmap *bitmap_create(int width, int height, int max, imgRawImage *img, i
     bm->threads = threads;
 
     bm->img = img;
-
-    //default
-    bm->xmin = 0;
-    bm->xmax = 0;
-    bm->ymin = 0;
-    bm->ymax = 0;
     
     return bm;
 }
@@ -82,22 +72,6 @@ int bitmap_max(struct bitmap *bm) {
 }
 int bitmap_threads(struct bitmap *bm) { 
     return bm->threads; 
-}
-double bitmap_xmin(struct bitmap *bm) { 
-    return bm->xmin; 
-}
-double bitmap_xmax(struct bitmap *bm) { 
-    return bm->xmax; 
-}
-double bitmap_ymin(struct bitmap *bm) { 
-    return bm->ymin; 
-}
-double bitmap_ymax(struct bitmap *bm) { 
-    return bm->ymax; 
-}
-
-struct imgRawImage *bitmap_raw(struct bitmap *bm) { 
-    return bm->img; 
 }
 
 void bitmap_set(struct bitmap *bm, int x, int y, int iters) {

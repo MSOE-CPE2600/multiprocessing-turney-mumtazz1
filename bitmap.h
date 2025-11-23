@@ -1,10 +1,10 @@
 /***********************************************************************
  * @file bitmap.h
- * @brief declares the bitmap structure
+ * @brief declares the bitmap structure, holding info for image creation
  * Course: CPE2600
  * Assignment: Lab 12 - Multithreading
  * Author: Zoya Mumtaz
- * Date: 11/11/2025
+ * Date: 11/20/2025
  * Note: compile with
  *     $ make
  *     run with
@@ -29,15 +29,7 @@ int bitmap_height(struct bitmap *bm);
 int bitmap_max(struct bitmap *bm);
 int bitmap_threads(struct bitmap *bm);
 
-double bitmap_xmin(struct bitmap *bm);
-double bitmap_xmax(struct bitmap *bm);
-double bitmap_ymin(struct bitmap *bm);
-double bitmap_ymax(struct bitmap *bm);
-
 //setter
 void bitmap_set(struct bitmap *bm, int x, int y, int iters);
-
-//access the raw image if needed
-struct imgRawImage *bitmap_raw(struct bitmap *bm);
 
 #endif
