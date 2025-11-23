@@ -2,7 +2,7 @@
  * @file mandel.c
  * @brief Source file which implements image creation for movie
  * Course: CPE2600
- * Assignment: Lab 11 - Multiprocessing
+ * Assignment: Lab 12 - Multithreading
  * Author: Zoya Mumtaz
  * Date: 11/11/2025
  * Note: compile with
@@ -24,15 +24,31 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <math.h>
+#include <pthread.h>
 #include "jpegrw.h"
+#include "bitmap.h"
 
 #define NUM_IMAGES 50 //number of image needed, 50 iterations to be done
 
+//creating a struct to hold variables for the thread
+struct thread_data {
+	struct bitmap *bm;
+	double xmin;
+	double xmax;
+	double ymin;
+	double ymax;
+	int max;
+
+	int starting_row;
+	int ending_row;
+}
+
 // local routines
-static int iteration_to_color( int i, int max );
+//static int iteration_to_color( int i, int max );
 static int iterations_at_point( double x, double y, int max );
-static void compute_image( imgRawImage *img, double xmin, double xmax,
+static void compute_image(struct bitmap *bm, double xmin, double xmax,
 									double ymin, double ymax, int max );
+static void* compute_helper(void *arg);
 static void show_help();
 
 
@@ -123,13 +139,17 @@ int main( int argc, char *argv[] )
                 // Fill it with a black
                 setImageCOLOR(img,0);
 
+				// Create the BitMap Struct
+				struct bitmap *bm = bitmap_create(image_width, image_height, max, img, 1);
+
                 // Compute the Mandelbrot image
-                compute_image(img,xcenter-xscale/2,xcenter+xscale/2,ycenter-yscale/2,ycenter+yscale/2,max);
+                compute_image(bm,xcenter-xscale/2,xcenter+xscale/2,ycenter-yscale/2,ycenter+yscale/2,max);
 
                 // Save the image in the stated file.
                 storeJpegImageFile(img,curr_filename);
 
-                // free the mallocs
+                // free the malloc
+			    free_bitmap(bm);
                 freeRawImage(img);
             }
 
@@ -173,48 +193,64 @@ int iterations_at_point( double x, double y, int max )
 	return iter;
 }
 
+void *compute_helper(void *arg) {
+	struct thread_data *data = (struct thread_data *)arg; //typecast the arg
+	struct bitmap *bm = data->bm;
+
+	int width = bitmap_width(bm);
+	int height = bitmap_height(bm);
+
+	// For every pixel in the image...
+
+	// Determine the point in x,y space for that pixel.
+	for(int i = data->starting_row; i < data->ending_row; j++){
+
+		for(int j = 0; j < width ; j++){
+			double x = data->xmin + j * (data->xmax - data->xmin) / width;
+			double y = data->ymin + i * (data->ymax - data->ymin) / height;
+
+			// Compute the iterations at that point.
+			int iters = iterations_at_point(x, y, data->max);
+
+			// Set the pixel in the bitmap.
+			bitmap_set(bm, i, j, iters);
+
+		}
+	}
+	return NULL;
+}
+
 /*
 Compute an entire Mandelbrot image, writing each point to the given bitmap.
 Scale the image to the range (xmin-xmax,ymin-ymax), limiting iterations to "max"
 */
 
-void compute_image(imgRawImage* img, double xmin, double xmax, double ymin, double ymax, int max )
+void compute_image(struct bitmap *bm, double xmin, double xmax, double ymin, double ymax, int max )
 {
-	int i,j;
+	int threads = bitmap_threads(bm);
+	int height = bitmap_height(bm);
 
-	int width = img->width;
-	int height = img->height;
+	double xmin = bitmap_xmin(bm);
+	double xmax = bitmap_xmax(bm);
+	double ymin = bitmap_ymin(bm);
+	double ymax = bitmap_ymax(bm);
+	int max = bitmap_max(bm);
 
-	// For every pixel in the image...
+	//allocate memory for managing threads
+	pthread_t *pthreads = malloc(threads * sizeof(pthread_t));
+	struct thread_data *data_arr = malloc(threads * sizeof(struct thread_data));
 
-	for(j=0;j<height;j++) {
-
-		for(i=0;i<width;i++) {
-
-			// Determine the point in x,y space for that pixel.
-			double x = xmin + i*(xmax-xmin)/width;
-			double y = ymin + j*(ymax-ymin)/height;
-
-			// Compute the iterations at that point.
-			int iters = iterations_at_point(x,y,max);
-
-			// Set the pixel in the bitmap.
-			setPixelCOLOR(img,i,j,iteration_to_color(iters,max));
-		}
+	for (int i = 0; i < threads; i++){
+		
 	}
-}
 
 
-/*
-Convert a iteration number to a color.
-Here, we just scale to gray with a maximum of imax.
-Modify this function to make more interesting colors.
-*/
-int iteration_to_color( int iters, int max )
-{
-	int color = 0xFFFFFF*iters/(double)max;
-	return color;
+
+	
+
+	
 }
+
 
 
 // Show help message

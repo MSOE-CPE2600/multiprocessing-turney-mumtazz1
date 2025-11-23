@@ -3,14 +3,14 @@ CFLAGS = -Wall -g -c
 LDFLAGS = -ljpeg
 
 EXECS = mandel movie
-OBJS = jpegrw.o mandel.o mandelmovie.o
+OBJS = jpegrw.o mandel.o mandelmovie.o bitmap.o
 
 all: $(EXECS)
 
 mandel: jpegrw.o mandel.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-movie: jpegrw.o mandelmovie.o
+movie: jpegrw.o bitmap.o mandelmovie.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
