@@ -41,10 +41,9 @@ struct thread_data {
 
 	int starting_row;
 	int ending_row;
-}
+};
 
 // local routines
-//static int iteration_to_color( int i, int max );
 static int iterations_at_point( double x, double y, int max );
 static void compute_image(struct bitmap *bm, double xmin, double xmax,
 									double ymin, double ymax, int max );
@@ -56,6 +55,7 @@ int main( int argc, char *argv[] )
 {
 	char c;
     int num_child = 1; //default 1 child
+	int thread_count = 1; //default threads is 1
 
 	// These are the default configuration values used
 	// if no command line arguments are given.
@@ -86,7 +86,7 @@ int main( int argc, char *argv[] )
 	// For each command line argument given,
 	// override the appropriate configuration value.
 
-	while((c = getopt(argc,argv,"n:h"))!=-1) {
+	while((c = getopt(argc,argv,"t:n:h"))!=-1) {
 		switch(c) 
 		{
             case 'n':
@@ -96,6 +96,9 @@ int main( int argc, char *argv[] )
 			    show_help();
 				return 0;
 				break;
+			case 't':
+			    thread_count = atoi(optarg);
+				break;	
 			default:
 			    return 0;		  
 		}
@@ -105,6 +108,12 @@ int main( int argc, char *argv[] )
         printf("Error: Number of children must be between 1 and 50.\n");
         return 1;
     }
+
+	if (thread_count < 1 || thread_count > 20){
+        printf("Error: Number of threads must be between 1 and 20.\n");
+        return 1;
+    }
+
 
     int batch = NUM_IMAGES / num_child; //divide processes with num of children
     for (int i = 0; i < num_child; i++){ //each child iterates
@@ -140,7 +149,7 @@ int main( int argc, char *argv[] )
                 setImageCOLOR(img,0);
 
 				// Create the BitMap Struct
-				struct bitmap *bm = bitmap_create(image_width, image_height, max, img, 1);
+				struct bitmap *bm = bitmap_create(image_width, image_height, max, img, thread_count);
 
                 // Compute the Mandelbrot image
                 compute_image(bm,xcenter-xscale/2,xcenter+xscale/2,ycenter-yscale/2,ycenter+yscale/2,max);
@@ -163,8 +172,6 @@ int main( int argc, char *argv[] )
 
 	return 0;
 }
-
-
 
 
 /*
@@ -193,6 +200,12 @@ int iterations_at_point( double x, double y, int max )
 	return iter;
 }
 
+
+/*
+* Helper function for compute_image(), goes into the pthread_create() argument
+* contains instructions that the thread will execute
+* takes in void * and returns void *
+*/
 void *compute_helper(void *arg) {
 	struct thread_data *data = (struct thread_data *)arg; //typecast the arg
 	struct bitmap *bm = data->bm;
@@ -203,7 +216,7 @@ void *compute_helper(void *arg) {
 	// For every pixel in the image...
 
 	// Determine the point in x,y space for that pixel.
-	for(int i = data->starting_row; i < data->ending_row; j++){
+	for(int i = data->starting_row; i < data->ending_row; i++){
 
 		for(int j = 0; j < width ; j++){
 			double x = data->xmin + j * (data->xmax - data->xmin) / width;
@@ -230,24 +243,44 @@ void compute_image(struct bitmap *bm, double xmin, double xmax, double ymin, dou
 	int threads = bitmap_threads(bm);
 	int height = bitmap_height(bm);
 
-	double xmin = bitmap_xmin(bm);
-	double xmax = bitmap_xmax(bm);
-	double ymin = bitmap_ymin(bm);
-	double ymax = bitmap_ymax(bm);
-	int max = bitmap_max(bm);
 
-	//allocate memory for managing threads
+	//allocate memory (dynamic arrays) for managing each thread
 	pthread_t *pthreads = malloc(threads * sizeof(pthread_t));
 	struct thread_data *data_arr = malloc(threads * sizeof(struct thread_data));
 
+	//create each thread
 	for (int i = 0; i < threads; i++){
-		
+		//general data
+		data_arr[i].bm = bm;
+		data_arr[i].xmin = xmin;
+		data_arr[i].xmax = xmax;
+		data_arr[i].ymin = ymin;
+		data_arr[i].ymax = ymax;
+		data_arr[i].max = max;
+
+		//calculate the starting and ending row for the thread
+		data_arr[i].starting_row = i * (height/threads); 
+		data_arr[i].ending_row = (i + 1) * (height/threads);
+
+		//edge case for the last thread and any remainder rows of the image
+		if (i == threads - 1){
+			data_arr[i].ending_row = height;
+		}
+
+		//create the thread
+		pthread_create(&pthreads[i], NULL, compute_helper, &data_arr[i]);
+
 	}
 
+	for (int i = 0; i < threads; i++){
+		//pthread_join will pause until pthreads[i] is done
+		//making sure that each thread has finished befeore continuing
+		pthread_join(pthreads[i], NULL);
+	}
 
-
-	
-
+	//deallocating
+	free(pthreads);
+	free(data_arr);
 	
 }
 
@@ -259,6 +292,10 @@ void show_help()
 	printf("Use: ./movie [option]\n");
 	printf("-n <number of child processes>\n");
 	printf("Example: ./movie -n 15\n");
+	printf("-t <number of threads>\n");
+	printf("Example: ./movie -t 5\n");
+	printf("Note: both processes and threads can be set.\n");
+	printf("Example: ./movie -n 10 -t 3\n");
 	printf("-h: this help message.\n");
 
 }

@@ -18,9 +18,9 @@
 
 struct bitmap;
 
-//constructor function
+//constructor (allocate) function
 struct bitmap *bitmap_create(int width, int height, int max, imgRawImage *img, int threads);
-//destructor function
+//destructor (deallocate) function
 void free_bitmap(struct bitmap *bm);
 
 //getters

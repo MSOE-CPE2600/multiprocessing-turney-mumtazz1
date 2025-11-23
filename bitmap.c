@@ -35,8 +35,9 @@ struct bitmap {
 Convert a iteration number to a color.
 Here, we just scale to gray with a maximum of imax.
 Modify this function to make more interesting colors.
+Moved to bitmap.c so bitmap_set() can utilize it
 */
-int iteration_to_color( int iters, int max )
+static int iteration_to_color( int iters, int max )
 {
 	int color = 0xFFFFFF*iters/(double)max;
 	return color;
@@ -44,6 +45,7 @@ int iteration_to_color( int iters, int max )
 
 
 struct bitmap *bitmap_create(int width, int height, int max, imgRawImage *img, int threads) {
+    //using dynamic memory to store bitmap struct to keep it alive
     struct bitmap *bm = malloc(sizeof(struct bitmap));
 
     bm->width = width;
@@ -63,7 +65,7 @@ struct bitmap *bitmap_create(int width, int height, int max, imgRawImage *img, i
 }
 
 void free_bitmap(struct bitmap *bm) {
-    if (bm) {
+    if (bm != NULL) {
         free(bm);
     }
 }
@@ -102,5 +104,5 @@ void bitmap_set(struct bitmap *bm, int x, int y, int iters) {
    int max = bm->max;
    int color = iteration_to_color(iters, max);
    //write to the raw image
-   setPixelCOLOR(bm->img, x, y, color);
+   setPixelCOLOR(bm->img, y, x, color);
 }
