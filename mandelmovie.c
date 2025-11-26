@@ -1,5 +1,5 @@
 /***********************************************************************
- * @file mandel.c
+ * @file mandelmovie.c
  * @brief Source file which implements image creation for movie
  * Course: CPE2600
  * Assignment: Lab 12 - Multithreading
