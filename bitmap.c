@@ -2,6 +2,7 @@
  * @file bitmap.c
  * @brief implements the functions of the bitmap structure
  * allocating struct here to avoid global variable
+ * Each image is shared by the given number of threads
  * Course: CPE2600
  * Assignment: Lab 12 - Multithreading
  * Author: Zoya Mumtaz

@@ -30,7 +30,7 @@
 
 #define NUM_IMAGES 50 //number of image needed, 50 iterations to be done
 
-//declare struct to hold image coordinate variables for the thread
+//declare struct to hold image coordinate variables for one thread
 struct thread_data {
 	struct bitmap *bm;
 	double xmin;
