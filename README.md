@@ -22,7 +22,7 @@ The ycenter position of each image is kept the same while the xcenter position, 
 
 The program uses getopt() to read an argument '-t' where the user can specify the number of threads (from 1 to 20) that the program should implement to split the work of creating one image. This can be combined with the 'n' argument to set both the number of child processes and threads at the same time. If the user enters no argument, the default is 1 thread.
 
-Based on the number of threads, the work of creating one image is divided amongst them. Each thread is given a section of the image (start and end at calculated rows) to write the pixels. For example, if the user specifies there to be 3 threads, the image is split into three sections for each thread to work on; one does the top section, middle section, and bottom section. 
+Based on the number of threads, the work of creating one image is divided amongst them. Each thread is given a section of the image (start and end at calculated rows) to write the pixels. For example, if the user specifies there to be 3 threads, the image is split into three sections for each thread to work on; one does the top section, middle section, and bottom section.
 
 A struct named bitmap holds necessary data for the image creation, and another struct named thread\_data holds the bitmap struct and other information needed for the specific thread's execution (since pthread function only takes one argument and in this case we need to input many arguments). The function compute\_image() was modified to become the thread controller, creating, joining, and freeing the threads once execution has finished for the single image. A function named compute\_helper() was created for each thread to execute. To avoid global variable, bitmap structure is implemented in its own file (bitmap.c), where there are variable retrieval, allocation, deallocation, and image writing functions. The main program mandelmovie.c includes the bitmap header file (bitmap.h) to use those functions.
 
@@ -60,9 +60,9 @@ From the table, it can be concluded that multiprocessing impacted the runtime re
 
 
 
-The most optimal combination was 10 thread and 15 child processes, resulting in a runtime of just 8.5 seconds. The CPU remains busy the entire time, making sure no time is wasted waiting for a process to finish. While some processes were paused waiting for slow operations like writing the image to disk, other processes were immediately available to utilize the CPU for calculations. No other combination resulted in a runtime this short.
+The most optimal combination was 10 threads and 15 child processes, resulting in a runtime of just 8.5 seconds. The CPU remains busy the entire time, making sure no time is wasted waiting for a process to finish. While some processes were paused waiting for slow operations like writing the image to disk, other processes were immediately available to utilize the CPU for calculations. No other combination resulted in a runtime this short.
 
 
 
-The program is an excellent demonstration of the uses of multiprocessing and confirms that parallel execution is the most optimal for performance on multicore hardware.
+The program is an excellent demonstration of the uses of multiprocessing and multithreading and confirms that parallel execution is the most optimal for performance on multicore hardware.
 
